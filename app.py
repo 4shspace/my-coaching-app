@@ -14,32 +14,44 @@ def main():
         st.session_state.api_response = ""
         st.session_state.error_message = ""
 
-    # --- Sidebar for API Key Information (Secrets) ---
-    st.sidebar.header("🔑 Gemini API 설정 (보안)")
-    st.sidebar.markdown("""
-    이 앱은 Gemini API를 사용합니다. 
-    앱이 배포된 환경에서는 Streamlit Secrets 또는 해당 플랫폼의 비밀 관리 기능을 통해 API 키가 안전하게 설정되어야 합니다.
+    # --- Sidebar ---
+    # 배포된 앱에서는 API 키 입력 안내나 로컬 테스트 안내가 필요 없으므로 관련 문구 제거
+    # st.sidebar.header("🔑 Gemini API 설정 (보안)") # 이 줄과 아래 문단들을 주석 처리하거나 삭제합니다.
+    # st.sidebar.markdown("""
+    # 이 앱은 Gemini API를 사용합니다. 
+    # 앱이 배포된 환경에서는 Streamlit Secrets 또는 해당 플랫폼의 비밀 관리 기능을 통해 API 키가 안전하게 설정되어야 합니다.
 
-    **로컬 테스트 시:**
-    만약 로컬에서 이 앱을 테스트하고 싶다면, 프로젝트 루트 디렉토리에 `.streamlit/secrets.toml` 파일을 만들고 다음과 같이 API 키를 추가하세요:
-    ```toml
-    GEMINI_API_KEY = "여기에_실제_API_키를_입력하세요"
-    ```
-    **주의:** `secrets.toml` 파일은 절대로 GitHub와 같은 공개 저장소에 올리면 안 됩니다! `.gitignore` 파일에 `.streamlit/secrets.toml`을 추가하세요.
-    """)
-    st.sidebar.markdown("`pip install google-generativeai` 라이브러리가 설치되어 있어야 합니다.")
-    st.sidebar.markdown("---")
+    # **로컬 테스트 시:**
+    # 만약 로컬에서 이 앱을 테스트하고 싶다면, 프로젝트 루트 디렉토리에 `.streamlit/secrets.toml` 파일을 만들고 다음과 같이 API 키를 추가하세요:
+    # ```toml
+    # GEMINI_API_KEY = "여기에_실제_API_키를_입력하세요"
+    # ```
+    # **주의:** `secrets.toml` 파일은 절대로 GitHub와 같은 공개 저장소에 올리면 안 됩니다! `.gitignore` 파일에 `.streamlit/secrets.toml`을 추가하세요.
+    # """)
+    # st.sidebar.markdown("`pip install google-generativeai` 라이브러리가 설치되어 있어야 합니다.")
+    # st.sidebar.markdown("---")
+    # st.sidebar.header("ℹ️ 사용 방법") # 이 줄과 아래 문단들을 주석 처리하거나 삭제합니다.
+    # st.sidebar.markdown("""
+    # 1.  **API 키 설정:**
+    #     * **배포 시:** Streamlit Community Cloud 또는 사용 중인 플랫폼의 Secrets 설정에서 `GEMINI_API_KEY`라는 이름으로 API 키를 등록합니다.
+    #     * **로컬 테스트 시:** 프로젝트 폴더 내에 `.streamlit/secrets.toml` 파일을 만들고 `GEMINI_API_KEY = "YOUR_API_KEY"` 형식으로 키를 저장합니다. (사이드바 상세 안내 참고)
+    # 2.  메인 화면의 입력 필드([1]~[4])에 학생 관련 정보를 모두 입력합니다.
+    # 3.  필요시, TXT 또는 MD 형식의 관련 자료 파일을 업로드합니다.
+    # 4.  `코칭 질문 및 피드백 생성 (API 호출)` 버튼을 클릭합니다.
+    # 5.  잠시 기다리면 Gemini API가 생성한 코칭 질문과 피드백이 화면 하단에 나타납니다.
+    # """)
+    # st.sidebar.markdown("---")
+    st.sidebar.info("이 앱은 Streamlit과 Gemini API를 사용하여 제작되었습니다.") # 이 한 줄 정도는 남겨두거나, 이것도 원치 않으시면 삭제 가능합니다.
+
 
     # --- Attempt to load API key from Streamlit Secrets ---
     try:
-        # Streamlit Cloud 또는 로컬 .streamlit/secrets.toml 에서 API 키를 불러옵니다.
-        # "GEMINI_API_KEY"는 secrets.toml 파일이나 Streamlit Cloud 설정에서 지정한 이름입니다.
         api_key = st.secrets["GEMINI_API_KEY"]
     except KeyError:
-        st.error("⚠️ Gemini API 키가 설정되지 않았습니다. 앱 관리자에게 문의하거나 로컬 테스트 시 .streamlit/secrets.toml 파일을 확인해주세요.")
-        st.stop() # API 키가 없으면 앱 실행 중단
-    except FileNotFoundError: # 로컬에서 .streamlit 폴더나 secrets.toml 파일이 없을 경우
-        st.error("⚠️ 로컬 테스트 시: .streamlit/secrets.toml 파일을 찾을 수 없습니다. 사이드바 안내를 따라 파일을 생성해주세요.")
+        st.error("⚠️ Gemini API 키가 설정되지 않았습니다. 앱 관리자에게 문의해주세요. Streamlit Community Cloud의 Secrets 설정을 확인해야 합니다.")
+        st.stop()
+    except FileNotFoundError: # 로컬에서 .streamlit 폴더나 secrets.toml 파일이 없을 경우 (배포 환경에서는 이 오류가 나면 안 됨)
+        st.error("⚠️ 로컬 테스트 환경에서 secrets.toml 파일을 찾을 수 없습니다. 배포 환경에서는 Streamlit Cloud의 Secrets 설정을 확인해야 합니다.")
         st.stop()
 
 
@@ -93,15 +105,14 @@ def main():
         st.session_state.api_response = ""
         st.session_state.error_message = ""
 
-        # API 키는 이미 위에서 st.secrets를 통해 불러왔으므로, 여기서는 유효성만 확인합니다.
-        if not api_key: # 이 경우는 st.stop()으로 이미 처리되었을 가능성이 높지만, 안전장치로 둡니다.
-            st.error("⚠️ Gemini API 키를 사용할 수 없습니다. 설정을 확인해주세요.")
+        if not api_key:
+            st.error("⚠️ Gemini API 키를 사용할 수 없습니다. 앱 설정을 확인해주세요.")
         elif not student_situation_input or not student_info_input or not learning_context_input or not feedback_goal_input:
             st.error("⚠️ 모든 필수 입력 필드([1]~[4])를 채워주세요!")
         else:
             with st.spinner("Gemini API로부터 코칭 질문과 피드백을 생성 중입니다... 잠시만 기다려주세요."):
                 try:
-                    genai.configure(api_key=api_key) # Configure with the key loaded from secrets
+                    genai.configure(api_key=api_key)
                     model = genai.GenerativeModel(model_name="gemini-1.5-flash-latest")
 
                     file_content_for_prompt = ""
@@ -168,21 +179,6 @@ def main():
         st.markdown("---")
         st.header("🚫 오류 발생")
         st.error(st.session_state.error_message)
-
-
-    # --- Sidebar Usage Guide ---
-    st.sidebar.header("ℹ️ 사용 방법")
-    st.sidebar.markdown("""
-    1.  **API 키 설정:**
-        * **배포 시:** Streamlit Community Cloud 또는 사용 중인 플랫폼의 Secrets 설정에서 `GEMINI_API_KEY`라는 이름으로 API 키를 등록합니다.
-        * **로컬 테스트 시:** 프로젝트 폴더 내에 `.streamlit/secrets.toml` 파일을 만들고 `GEMINI_API_KEY = "YOUR_API_KEY"` 형식으로 키를 저장합니다. (사이드바 상세 안내 참고)
-    2.  메인 화면의 입력 필드([1]~[4])에 학생 관련 정보를 모두 입력합니다.
-    3.  필요시, TXT 또는 MD 형식의 관련 자료 파일을 업로드합니다.
-    4.  `코칭 질문 및 피드백 생성 (API 호출)` 버튼을 클릭합니다.
-    5.  잠시 기다리면 Gemini API가 생성한 코칭 질문과 피드백이 화면 하단에 나타납니다.
-    """)
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("이 앱은 Streamlit과 Gemini API를 사용하여 제작되었습니다.")
 
 # --- Script Entry Point ---
 if __name__ == "__main__":
