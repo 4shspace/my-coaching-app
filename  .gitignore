@@ -1,0 +1,7 @@
+# Streamlit secrets 파일 제외
+.streamlit/secrets.toml
+
+# Python 가상 환경 폴더 제외 (예시)
+venv/
+*.pyc
+__pycache__/
